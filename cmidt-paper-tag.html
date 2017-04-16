@@ -1,0 +1,174 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../paper-input/paper-input-behavior.html">
+<link rel="import" href="../paper-input/paper-input-container.html">
+<link rel="import" href="../paper-input/paper-input-error.html">
+<link rel="import" href="../paper-autocomplete/paper-autocomplete-suggestions.html">
+
+<!--
+`cmidt-paper-tag`
+
+
+@demo demo/index.html 
+-->
+
+<dom-module id="cmidt-paper-tag">
+  <template>
+    <style>
+       :host {
+        display: block;
+        outline: none;
+        position: relative;
+      }
+      
+       :host([focused]) {
+        outline: none;
+      }
+      
+       :host([hidden]) {
+        display: none !important;
+      }
+      
+      input::-webkit-calendar-picker-indicator {
+        display: none;
+      }
+      
+      input::-webkit-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+      
+      input:-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+      
+      input::-moz-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+      
+      input:-ms-input-placeholder {
+        color: var(--paper-input-container-color, --secondary-text-color);
+      }
+      
+      label {
+        pointer-events: none;
+      }
+      
+      #input {
+        display: inline-block;
+        width: auto;
+      }
+      
+      div.tag-item {
+        height: 28px;
+        padding: 0 0 0 8px;
+        margin: 2px 0;
+        border-radius: 16px;
+        font-size: 13px;
+        text-align: center;
+        color: var(--cmidt-paper-tag-item-color, white);
+        background-color: var(--cmidt-paper-tag-item-background-color, #831a72);
+        display: inline-flex;
+        @apply --layout-center;
+        @apply --cmidt-paper-tag-item;
+      }
+      
+      div.tag-item paper-icon-button {
+        width: 22px;
+        height: 22px;
+        padding: 4px;
+        margin: 3px;
+        background-color: var(--cmidt-paper-tag-item-remove-color, rgba(0, 0, 0, 0.4));
+        border-radius: 14px;
+      }
+    </style>
+
+    <paper-input-container no-label-float="[[noLabelFloat]]" always-float-label auto-validate$="[[autoValidate]]" disabled$="[[disabled]]"
+      invalid="[[invalid]]">
+
+      <label hidden$="[[!label]]" aria-hidden="true" for="input">[[label]]</label>
+
+      <div>
+        <template is="dom-repeat" items="[[selectedTag]]">
+          <div class="tag-item">
+            [[item.text]]
+            <paper-icon-button icon="icons:clear" on-tap="_onRemoveTag"></paper-icon-button>
+          </div>
+        </template>
+        <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]"
+          title$="[[title]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]"
+          validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]"
+          autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]"
+          max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" size$="[[size]]"
+          autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" tabindex$="[[tabindex]]"
+          autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
+        <paper-autocomplete-suggestions for="input" source="[[tags]]"></paper-autocomplete-suggestions>
+      </div>
+
+    </paper-input-container>
+
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'cmidt-paper-tag',
+
+      behaviors: [
+        Polymer.IronFormElementBehavior,
+        Polymer.PaperInputBehavior
+      ],
+
+      properties: {
+        selectedTag: {
+          type: Array,
+          value: []
+        },
+        tags: {
+          type: Array,
+          value: []
+        },
+        size: {
+          type: Number,
+          value: 8
+        },
+      },
+
+      listeners: {
+        'keyup': '_onKeyUp',
+        'keydown': '_onKeyDown'
+      },
+
+      _onRemoveTag: function (event) {
+        this.splice("selectedTag", event.model.index, 1);
+      },
+
+      _onKeyDown: function (event) {
+        if (event.keyCode == 8 && this.$.input.value.trim() == "" && this.selectedTag.length > 0) {
+          this.splice("selectedTag", this.selectedTag.length - 1, 1);
+        }
+      },
+
+      _onKeyUp: function (event) {
+        if (event.keyCode == 13) {
+          var label = this.$.input.value.trim();
+          var labelObj = { text: label };
+          for (var i = 0; i < this.tags.length; i++) {
+            if (this.tags[i].text.toLowerCase() == label.toLowerCase()) {
+              labelObj = this.tags[i];
+              break;
+            }
+          }
+          this.push("selectedTag", labelObj);
+          this.$.input.value = "";
+        } else {
+          this.size = Math.max(8, this.$.input.value.length);
+        }
+      }
+
+    });
+  </script>
+</dom-module>
